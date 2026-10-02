@@ -1,0 +1,64 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  oscal-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check JSON well-formedness
+        run: |
+          set -e
+          found=0
+          while IFS= read -r f; do
+            found=1
+            python3 -m json.tool "$f" > /dev/null || { echo "INVALID JSON: $f"; exit 1; }
+            echo "OK: $f"
+          done < <(find catalogs profiles mappings -name '*.json' 2>/dev/null)
+          if [ "$found" -eq 0 ]; then
+            echo "No JSON artefacts yet — nothing to validate."
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: OSCAL schema validation (trestle)
+        run: |
+          set -e
+          if find catalogs profiles -name '*.json' 2>/dev/null | grep -q .; then
+            pip install --quiet compliance-trestle
+            python3 /dev/stdin <<'EOF'
+          import pathlib, sys
+          from trestle.oscal.catalog import Catalog
+          from trestle.oscal.profile import Profile
+
+          failed = False
+          for f in pathlib.Path("catalogs").rglob("catalog.json"):
+              try:
+                  Catalog.oscal_read(f)
+                  print(f"VALID catalog: {f}")
+              except Exception as e:
+                  print(f"INVALID catalog: {f}\n{e}")
+                  failed = True
+          for f in pathlib.Path("profiles").rglob("profile.json"):
+              try:
+                  Profile.oscal_read(f)
+                  print(f"VALID profile: {f}")
+              except Exception as e:
+                  print(f"INVALID profile: {f}\n{e}")
+                  failed = True
+          sys.exit(1 if failed else 0)
+          EOF
+          else
+            echo "No OSCAL artefacts yet — skipping trestle."
+          fi

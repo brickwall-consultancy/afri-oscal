@@ -1,0 +1,32 @@
+name: New framework proposal
+description: Propose a new regulation/framework for encoding
+labels: [framework-proposal]
+body:
+  - type: input
+    id: instrument
+    attributes:
+      label: Legal instrument / framework name
+      placeholder: e.g. Ghana Data Protection Act 2012
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Link to the official public source text
+      description: Gazette, regulator website, or official PDF. Public law only.
+    validations:
+      required: true
+  - type: textarea
+    id: who
+    attributes:
+      label: Who must comply, and who is asking for this?
+      description: Helps us prioritise by real demand.
+    validations:
+      required: true
+  - type: checkboxes
+    id: licence
+    attributes:
+      label: Licensing check
+      options:
+        - label: This is public law / regulator-issued guidance, not a copyrighted standard
+          required: true

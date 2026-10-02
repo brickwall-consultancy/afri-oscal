@@ -1,0 +1,16 @@
+# Python / trestle
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.trestle/_trash/
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Scratch
+*.tmp
+.scratch/
